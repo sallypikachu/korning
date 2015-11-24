@@ -33,18 +33,10 @@ def insert_person(arr_of_arr, insertion)
   end
 end
 
-def insert_products(arr_of_arr)
+def insert_one_variable(arr_of_arr, insertion)
   arr_of_arr.each do |arr|
     db_connection do |conn|
-      conn.exec("INSERT INTO products (name) VALUES ('#{arr}');")
-    end
-  end
-end
-
-def insert_frequencies(arr_of_arr)
-  arr_of_arr.each do |arr|
-    db_connection do |conn|
-      conn.exec("INSERT INTO frequencies (frequency) VALUES ('#{arr}');")
+      conn.exec(insertion, [arr])
     end
   end
 end
@@ -71,8 +63,8 @@ parsed_unique_customers = unique_customers.map {|x| x.split("(")}
 
 insert_person(parsed_unique_employees, "INSERT INTO employees (name, email) VALUES ($1, $2);")
 insert_person(parsed_unique_customers, "INSERT INTO customers (name, account) VALUES ($1, $2);")
-insert_products(unique_products)
-insert_frequencies(unique_invoice_frequencies)
+insert_one_variable(unique_products, "INSERT INTO products (name) VALUES ($1);")
+insert_one_variable(unique_invoice_frequencies, "INSERT INTO frequencies (frequency) VALUES ($1);")
 
 def insert_sales(arr_of_hash)
   arr_of_hash.each do |hash|
