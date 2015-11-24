@@ -1,9 +1,5 @@
-# Use this file to import the sales information into the
-# the database.
-
 require "pg"
 require "csv"
-require "pry"
 
 system 'psql korning < schema.sql'
 
@@ -41,18 +37,16 @@ def insert_one_variable(arr_of_arr, insertion)
   end
 end
 
-def unique(arr_of_hash, data)
+def unique(data)
   unique = []
-  arr_of_hash.each do |hash|
-    if !unique.include?(hash[data])
-      unique << hash[data]
-    end
+  @arr_of_hash.each do |hash|
+    unique << hash[data] unless unique.include?(hash[data])
   end
   unique
 end
 
-def insert_sales(arr_of_hash)
-  arr_of_hash.each do |hash|
+def insert_sales
+  @arr_of_hash.each do |hash|
     db_connection do|conn|
       employee = conn.exec("SELECT id FROM employees WHERE name = '#{hash[:employee].split(" (").first}';")
       customer = conn.exec("SELECT id FROM customers WHERE name = '#{hash[:customer_and_account_no].split(" (").first}';")
@@ -64,16 +58,16 @@ def insert_sales(arr_of_hash)
   end
 end
 
-arr_of_hash = csv_to_arr_of_hash('sales.csv')
+@arr_of_hash = csv_to_arr_of_hash('sales.csv')
 
-unique_employees = unique(arr_of_hash, :employee).map {|x| x.split("(")}
-unique_customers = unique(arr_of_hash, :customer_and_account_no).map {|x| x.split("(")}
-unique_products = unique(arr_of_hash, :product_name)
-unique_invoice_frequencies = unique(arr_of_hash, :invoice_frequency)
+unique_employees = unique(:employee).map {|x| x.split("(")}
+unique_customers = unique(:customer_and_account_no).map {|x| x.split("(")}
+unique_products = unique(:product_name)
+unique_invoice_frequencies = unique(:invoice_frequency)
 
 insert_person(unique_employees, "INSERT INTO employees (name, email) VALUES ($1, $2);")
 insert_person(unique_customers, "INSERT INTO customers (name, account) VALUES ($1, $2);")
 insert_one_variable(unique_products, "INSERT INTO products (name) VALUES ($1);")
 insert_one_variable(unique_invoice_frequencies, "INSERT INTO frequencies (frequency) VALUES ($1);")
 
-insert_sales(arr_of_hash)
+insert_sales
