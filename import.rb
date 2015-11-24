@@ -25,18 +25,10 @@ def csv_to_arr_of_hash(file)
   arr_of_hash
 end
 
-def insert_employees(arr_of_arr)
+def insert_person(arr_of_arr, insertion)
   arr_of_arr.each do |arr|
     db_connection do |conn|
-      conn.exec("INSERT INTO employees (name, email) VALUES ('#{arr[0][0..-2]}', '#{arr[1][0..-2]}');")
-    end
-  end
-end
-
-def insert_customers(arr_of_arr)
-  arr_of_arr.each do |arr|
-    db_connection do |conn|
-      conn.exec("INSERT INTO customers (name, account) VALUES ('#{arr[0][0..-2]}', '#{arr[1][0..-2]}');")
+      conn.exec(insertion, [arr[0][0..-2], arr[1][0..-2]])
     end
   end
 end
@@ -77,8 +69,8 @@ unique_invoice_frequencies = unique(arr_of_hash, :invoice_frequency)
 parsed_unique_employees = unique_employees.map {|x| x.split("(")}
 parsed_unique_customers = unique_customers.map {|x| x.split("(")}
 
-insert_employees(parsed_unique_employees)
-insert_customers(parsed_unique_customers)
+insert_person(parsed_unique_employees, "INSERT INTO employees (name, email) VALUES ($1, $2);")
+insert_person(parsed_unique_customers, "INSERT INTO customers (name, account) VALUES ($1, $2);")
 insert_products(unique_products)
 insert_frequencies(unique_invoice_frequencies)
 
