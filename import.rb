@@ -51,21 +51,6 @@ def unique(arr_of_hash, data)
   unique
 end
 
-arr_of_hash = csv_to_arr_of_hash('sales.csv')
-
-unique_employees = unique(arr_of_hash, :employee)
-unique_customers = unique(arr_of_hash, :customer_and_account_no)
-unique_products = unique(arr_of_hash, :product_name)
-unique_invoice_frequencies = unique(arr_of_hash, :invoice_frequency)
-
-parsed_unique_employees = unique_employees.map {|x| x.split("(")}
-parsed_unique_customers = unique_customers.map {|x| x.split("(")}
-
-insert_person(parsed_unique_employees, "INSERT INTO employees (name, email) VALUES ($1, $2);")
-insert_person(parsed_unique_customers, "INSERT INTO customers (name, account) VALUES ($1, $2);")
-insert_one_variable(unique_products, "INSERT INTO products (name) VALUES ($1);")
-insert_one_variable(unique_invoice_frequencies, "INSERT INTO frequencies (frequency) VALUES ($1);")
-
 def insert_sales(arr_of_hash)
   arr_of_hash.each do |hash|
     db_connection do|conn|
@@ -78,5 +63,17 @@ def insert_sales(arr_of_hash)
     end
   end
 end
+
+arr_of_hash = csv_to_arr_of_hash('sales.csv')
+
+unique_employees = unique(arr_of_hash, :employee).map {|x| x.split("(")}
+unique_customers = unique(arr_of_hash, :customer_and_account_no).map {|x| x.split("(")}
+unique_products = unique(arr_of_hash, :product_name)
+unique_invoice_frequencies = unique(arr_of_hash, :invoice_frequency)
+
+insert_person(unique_employees, "INSERT INTO employees (name, email) VALUES ($1, $2);")
+insert_person(unique_customers, "INSERT INTO customers (name, account) VALUES ($1, $2);")
+insert_one_variable(unique_products, "INSERT INTO products (name) VALUES ($1);")
+insert_one_variable(unique_invoice_frequencies, "INSERT INTO frequencies (frequency) VALUES ($1);")
 
 insert_sales(arr_of_hash)
