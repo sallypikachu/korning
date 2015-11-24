@@ -68,21 +68,12 @@ insert_one_variable(unique_invoice_frequencies, "INSERT INTO frequencies (freque
 
 def insert_sales(arr_of_hash)
   arr_of_hash.each do |hash|
-    employee_name = hash[:employee].split(" (").first
-    company = hash[:customer_and_account_no].split(" (").first
-    product = hash[:product_name]
-    freq = hash[:invoice_frequency]
+    db_connection do|conn|
+      employee = conn.exec("SELECT id FROM employees WHERE name = '#{hash[:employee].split(" (").first}';")
+      customer = conn.exec("SELECT id FROM customers WHERE name = '#{hash[:customer_and_account_no].split(" (").first}';")
+      product = conn.exec("SELECT id FROM products WHERE name = '#{hash[:product_name]}';")
+      frequent = conn.exec("SELECT id FROM frequencies WHERE frequency = '#{hash[:invoice_frequency]}';")
 
-    employee = db_connection {|conn|
-      conn.exec("SELECT id FROM employees WHERE name = '#{employee_name}'")}
-    customer = db_connection {|conn|
-      conn.exec("SELECT id FROM customers WHERE name = '#{company}'")}
-    product = db_connection {|conn|
-      conn.exec("SELECT id FROM products WHERE name = '#{product}'")}
-    frequent = db_connection {|conn|
-      conn.exec("SELECT id FROM frequencies WHERE frequency = '#{freq}'")}
-
-    db_connection do |conn|
       conn.exec("INSERT INTO sales (sale_date, sale_amount, units_sold, invoice_no, employee_id, customer_id, product_id, frequency_id) VALUES ('#{hash[:sale_date]}', #{hash[:sale_amount][1..-1]}, #{hash[:units_sold]}, #{hash[:invoice_no]}, #{employee[0]["id"]}, #{customer[0]["id"]}, #{product[0]["id"]}, #{frequent[0]["id"]});")
     end
   end
